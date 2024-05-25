@@ -4,7 +4,7 @@
 
 #include "point.hpp"
 #include "path.hpp"
-#include "trapezoidal.hpp"
+#include "differentialKinematics.hpp"
 
 namespace beegen {
 class Generator {

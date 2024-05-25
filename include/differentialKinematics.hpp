@@ -4,9 +4,6 @@
 
 namespace beegen {
 struct Constraints {
-    double Length;
-    double StartVel;
-    double EndVel;
     double MaxVel;
     double MaxAccel;
     double MaxDecel;

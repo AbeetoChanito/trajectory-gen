@@ -8,7 +8,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS On)
 add_executable(
     trajectory_gen
     src/main.cpp
-    src/trapezoidal.cpp
     src/point.cpp
     src/path.cpp
     src/differentialKinematics.cpp
