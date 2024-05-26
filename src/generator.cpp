@@ -10,7 +10,13 @@ Generator::Generator(std::unique_ptr<Path> path, const Constraints& constraints,
 
 }
 
-std::vector<Generator::IntermediateProfilePoint> Generator::CalculateForwardPass() {
+struct IntermediateProfilePoint {
+    double t;
+    double vel;
+    double angularVel;
+};
+
+std::vector<Generator::ProfilePoint> Generator::Calculate() {
     std::vector<IntermediateProfilePoint> forwardPass;
 
     forwardPass.push_back(IntermediateProfilePoint {0, 0, 0});
@@ -35,17 +41,13 @@ std::vector<Generator::IntermediateProfilePoint> Generator::CalculateForwardPass
         forwardPass.push_back(IntermediateProfilePoint {t, vel, angularVel});
     }
 
-    return forwardPass;
-}
-
-std::vector<Generator::IntermediateProfilePoint> Generator::CalculateBackwardPass() {
     std::vector<IntermediateProfilePoint> backwardPass;
 
     backwardPass.push_back(IntermediateProfilePoint {0, 0, 0});
 
-    double d = m_Path->GetLength();
-    double vel = 0;
-    double lastAngularVel = 0;
+    d = m_Path->GetLength();
+    vel = 0;
+    lastAngularVel = 0;
 
     while (d >= 0) {
         d -= m_DeltaDistance;
@@ -63,14 +65,7 @@ std::vector<Generator::IntermediateProfilePoint> Generator::CalculateBackwardPas
         backwardPass.push_back(IntermediateProfilePoint {t, vel, angularVel});
     }
 
-    return backwardPass;
-}
-
-std::vector<Generator::ProfilePoint> Generator::Calculate() {
     std::vector<Generator::ProfilePoint> profile;
-
-    std::vector<IntermediateProfilePoint> forwardPass = CalculateForwardPass();
-    std::vector<IntermediateProfilePoint> backwardPass = CalculateBackwardPass();
 
     for (int i = 0; i < backwardPass.size(); i++) {
         IntermediateProfilePoint forwardPoint = forwardPass[i];

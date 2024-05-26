@@ -20,12 +20,6 @@ class Generator {
 
         std::vector<ProfilePoint> Calculate();
     private:
-        struct IntermediateProfilePoint {
-            double t;
-            double vel;
-            double angularVel;
-        };
-
         std::unique_ptr<Path> m_Path;
 
         Constraints m_Constraints;
@@ -33,9 +27,5 @@ class Generator {
         DifferentialKinematics m_DifferentialKinematics;
 
         double m_DeltaDistance;
-
-        std::vector<IntermediateProfilePoint> CalculateForwardPass();
-
-        std::vector<IntermediateProfilePoint> CalculateBackwardPass();
 };
 }
