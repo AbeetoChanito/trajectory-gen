@@ -32,16 +32,17 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
 
     float pathLength = m_Path->GetLength();
 
-    int toAllocate = pointsFitIn(pathLength, m_DeltaDistance) - 2;
+    int numPoints = pointsFitIn(pathLength, m_DeltaDistance);
+    int forwardPassPoints = numPoints - 2;
 
     std::vector<IntermediateProfilePoint> forwardPass;
-    forwardPass.reserve(toAllocate);
+    forwardPass.reserve(forwardPassPoints);
 
     double d = 0;
     double vel = 0;
     double lastAngularVel = 0;
 
-    for (int i = 0; i < toAllocate; i++) {
+    for (int i = 0; i < forwardPassPoints; i++) {
         double d = m_DeltaDistance * (i + 1);
         double t = m_Path->GetTFromArcLength(d);
 
@@ -57,14 +58,14 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
     }
 
     std::vector<ProfilePoint> backwardPass;
-    backwardPass.reserve(toAllocate + 2);
+    backwardPass.reserve(numPoints);
 
     backwardPass.push_back({m_Path->GetPoint(m_Path->GetMaxT()), 0, 0, pathLength});
 
     vel = 0;
     lastAngularVel = 0;
 
-    for (int i = toAllocate - 1; i >= 0; i--) {
+    for (int i = forwardPass.size() - 1; i >= 0; i--) {
         IntermediateProfilePoint correspondingProfilePoint = forwardPass[i];
 
         double angularVel = vel * correspondingProfilePoint.curvature;
