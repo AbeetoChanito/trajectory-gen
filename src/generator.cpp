@@ -11,7 +11,7 @@ Generator::Generator(std::unique_ptr<Path> path, const Constraints& constraints,
 
 }
 
-static int pointsFitIn(float d, float deltaD) {
+static int PointsFitIn(float d, float deltaD) {
     float unrounded = d / deltaD;
     int rounded = static_cast<int>(unrounded);
 
@@ -32,7 +32,7 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
 
     float pathLength = m_Path->GetLength();
 
-    int numPoints = pointsFitIn(pathLength, m_DeltaDistance);
+    int numPoints = PointsFitIn(pathLength, m_DeltaDistance);
     int forwardPassPoints = numPoints - 2;
 
     std::vector<IntermediateProfilePoint> forwardPass;
