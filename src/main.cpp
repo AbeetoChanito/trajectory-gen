@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
         .TrackWidth = 10
     };
 
-    Generator generator(std::move(cubicBezier), constraints, 0.01);
+    Generator generator(std::move(cubicBezier), constraints, 0.1);
     std::vector<Generator::ProfilePoint> output = generator.Calculate();
 
     for (const Generator::ProfilePoint& point : output) {

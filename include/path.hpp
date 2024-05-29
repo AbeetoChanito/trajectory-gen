@@ -20,6 +20,8 @@ class Path {
 
         virtual double GetTFromArcLength(double arcLength) const = 0;
 
+        virtual double GetMaxT() const = 0;
+
         virtual ~Path() = default;
 };
 
@@ -38,6 +40,8 @@ class CubicBezier : public Path {
         double GetCurvature(double t) const override;
 
         double GetTFromArcLength(double arcLength) const override;
+
+        double GetMaxT() const override;
     private:
         Point m_P0;
         Point m_P1;
@@ -71,6 +75,8 @@ class CubicSpline : public Path {
         double GetCurvature(double t) const override;
 
         double GetTFromArcLength(double arcLength) const override;
+
+        double GetMaxT() const override;
     private:
         std::vector<CubicBezier> m_Beziers;
 };

@@ -58,6 +58,10 @@ double CubicBezier::GetCurvature(double t) const {
 }
 
 double CubicBezier::GetTFromArcLength(double arcLength) const {
+    if (arcLength >= GetLength()) return 1;
+
+    if (arcLength <= 0) return 0;
+
     int low = 0;
     int high = GetLength();
     int mid = 0;
@@ -89,6 +93,10 @@ double CubicBezier::GetTFromArcLength(double arcLength) const {
         double interpolationAmount = (arcLength - m_LengthsAtT[mid]) / (m_LengthsAtT[mid + 1] - m_LengthsAtT[mid]);
         return (mid + interpolationAmount) * m_TIncrement;
     }
+}
+
+double CubicBezier::GetMaxT() const {
+    return 1;
 }
 
 CubicSpline::CubicSpline(const std::initializer_list<Knot>& knots) {
@@ -130,7 +138,7 @@ double CubicSpline::GetLength() const {
 #define IMPLEMENT_FOR_SPLINE(f, type) \
     type CubicSpline::Get##f(double t) const { \
         int floored = std::floor(t); \
-        if (floored == m_Beziers.size()) floored -= 1; \
+        if (floored == m_Beziers.size()) floored--; \
         return m_Beziers[floored].Get##f(t - floored); \
     } \
 
@@ -140,9 +148,9 @@ IMPLEMENT_FOR_SPLINE(SecondDerivative, Point)
 IMPLEMENT_FOR_SPLINE(Curvature, double)
 
 double CubicSpline::GetTFromArcLength(double arcLength) const {    
-    if (arcLength > GetLength()) return m_Beziers.size();
+    if (arcLength >= GetLength()) return m_Beziers.size();
 
-    if (arcLength < 0) return 0;
+    if (arcLength <= 0) return 0;
     
     double totalLength = 0;
     int i = 0;
@@ -154,5 +162,9 @@ double CubicSpline::GetTFromArcLength(double arcLength) const {
     totalLength -= m_Beziers[(i == 0) ? 0 : --i].GetLength();
 
     return i + m_Beziers[i].GetTFromArcLength(arcLength - totalLength);
+}
+
+double CubicSpline::GetMaxT() const {
+    return m_Beziers.size();
 }
 }
