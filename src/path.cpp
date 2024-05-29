@@ -137,7 +137,7 @@ double CubicSpline::GetLength() const {
 
 #define IMPLEMENT_FOR_SPLINE(f, type) \
     type CubicSpline::Get##f(double t) const { \
-        int floored = std::floor(t); \
+        int floored = static_cast<int>(t); \
         if (floored == m_Beziers.size()) floored--; \
         return m_Beziers[floored].Get##f(t - floored); \
     } \

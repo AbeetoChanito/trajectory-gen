@@ -20,13 +20,17 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
         double curvature;
     };
 
+    int toAllocate = static_cast<int>(m_Path->GetLength() / m_DeltaDistance) - 1;
+
     std::vector<IntermediateProfilePoint> forwardPass;
+    forwardPass.reserve(toAllocate);
 
     double d = 0;
     double vel = 0;
     double lastAngularVel = 0;
 
-    while (d < m_Path->GetLength()) {
+    for (int i = 0; i < toAllocate; i++) {
+        double d = m_DeltaDistance * (i + 1);
         double t = m_Path->GetTFromArcLength(d);
 
         double curvature = m_Path->GetCurvature(t);
@@ -38,18 +42,17 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
         vel = std::min(m_DifferentialKinematics.GetMaxSpeed(curvature), std::sqrt(vel * vel + 2 * maxAccel * m_DeltaDistance));
 
         forwardPass.push_back(IntermediateProfilePoint {vel, angularVel, d, t, curvature});
-
-        d += m_DeltaDistance;
     }
 
     std::vector<ProfilePoint> backwardPass;
+    backwardPass.reserve(toAllocate + 2);
 
     backwardPass.push_back({m_Path->GetPoint(m_Path->GetMaxT()), 0, 0, m_Path->GetLength()});
 
     vel = 0;
     lastAngularVel = 0;
 
-    for (int i = forwardPass.size() - 1; i >= 0; i--) {
+    for (int i = toAllocate - 1; i >= 0; i--) {
         IntermediateProfilePoint correspondingProfilePoint = forwardPass[i];
 
         double angularVel = vel * correspondingProfilePoint.curvature;
