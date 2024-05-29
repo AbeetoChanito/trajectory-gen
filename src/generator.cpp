@@ -11,6 +11,16 @@ Generator::Generator(std::unique_ptr<Path> path, const Constraints& constraints,
 
 }
 
+static int pointsFitIn(float d, float deltaD) {
+    float unrounded = d / deltaD;
+    int rounded = static_cast<int>(unrounded);
+
+    if (unrounded < 2)
+        return rounded + 2;
+    else 
+        return rounded + 1;
+}
+
 std::vector<Generator::ProfilePoint> Generator::Calculate() {
     struct IntermediateProfilePoint {
         double vel;
@@ -20,7 +30,9 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
         double curvature;
     };
 
-    int toAllocate = static_cast<int>(m_Path->GetLength() / m_DeltaDistance) - 1;
+    float pathLength = m_Path->GetLength();
+
+    int toAllocate = pointsFitIn(pathLength, m_DeltaDistance) - 2;
 
     std::vector<IntermediateProfilePoint> forwardPass;
     forwardPass.reserve(toAllocate);
@@ -47,7 +59,7 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
     std::vector<ProfilePoint> backwardPass;
     backwardPass.reserve(toAllocate + 2);
 
-    backwardPass.push_back({m_Path->GetPoint(m_Path->GetMaxT()), 0, 0, m_Path->GetLength()});
+    backwardPass.push_back({m_Path->GetPoint(m_Path->GetMaxT()), 0, 0, pathLength});
 
     vel = 0;
     lastAngularVel = 0;
