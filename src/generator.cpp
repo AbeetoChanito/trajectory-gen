@@ -42,7 +42,7 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
 
     forwardPass.push_back({0, 0, 0, 0, 0});
 
-    for (int i = 1; i < numPoints; i++) {
+    for (int i = 1; numPoints > 2 && i < numPoints; i++) {
         double d = m_DeltaDistance * i;
         double t = m_Path->GetTFromArcLength(d);
 
