@@ -24,7 +24,6 @@ static int PointsFitIn(float d, float deltaD) {
 std::vector<Generator::ProfilePoint> Generator::Calculate() {
     struct IntermediateProfilePoint {
         double vel;
-        double angularVel;
         double distance;
         double t;
         double curvature;
@@ -40,7 +39,7 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
     double vel = 0;
     double lastAngularVel = 0;
 
-    forwardPass.push_back({0, 0, 0, 0, 0});
+    forwardPass.push_back({0, 0, 0, 0});
 
     for (int i = 1; numPoints > 2 && i < numPoints; i++) {
         double d = m_DeltaDistance * i;
@@ -54,10 +53,10 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
         double maxAccel = m_Constraints.MaxAccel - std::abs(angularAccel * m_Constraints.TrackWidth / 2);
         vel = std::min(m_DifferentialKinematics.GetMaxSpeed(curvature), std::sqrt(vel * vel + 2 * maxAccel * m_DeltaDistance));
 
-        forwardPass.push_back(IntermediateProfilePoint {vel, angularVel, d, t, curvature});
+        forwardPass.push_back(IntermediateProfilePoint {vel, d, t, curvature});
     }
 
-    forwardPass.push_back({0, 0, m_Path->GetLength(), m_Path->GetMaxT(), 0});
+    forwardPass.push_back({0, m_Path->GetLength(), m_Path->GetMaxT(), 0});
 
     std::vector<ProfilePoint> backwardPass;
     backwardPass.reserve(numPoints);
@@ -75,10 +74,12 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
         double maxAccel = m_Constraints.MaxDecel - std::abs(angularAccel * m_Constraints.TrackWidth / 2);
         vel = std::min(m_DifferentialKinematics.GetMaxSpeed(correspondingProfilePoint.curvature), std::sqrt(vel * vel + 2 * maxAccel * m_DeltaDistance));
 
+        double minVel = std::min(vel, correspondingProfilePoint.vel);
+
         backwardPass.push_back({
             m_Path->GetPoint(correspondingProfilePoint.t),
-            std::min(vel, correspondingProfilePoint.vel),
-            correspondingProfilePoint.angularVel,
+            minVel,
+            minVel * correspondingProfilePoint.curvature,
             correspondingProfilePoint.distance
         });
     }
