@@ -5,7 +5,6 @@
 #include <iostream>
 #include <cmath>
 #include <memory>
-#include <chrono>
 
 using namespace beegen;
 
