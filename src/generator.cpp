@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 namespace beegen {
 Generator::Generator(std::unique_ptr<Path> path, const Constraints& constraints, double deltaDistance)
@@ -21,7 +22,7 @@ static int PointsFitIn(float d, float deltaD) {
         return rounded + 1;
 }
 
-std::vector<Generator::ProfilePoint> Generator::Calculate() {
+void Generator::Calculate() {
     struct IntermediateProfilePoint {
         double vel;
         double distance;
@@ -29,9 +30,7 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
         double curvature;
     };
 
-    float pathLength = m_Path->GetLength();
-
-    int numPoints = PointsFitIn(pathLength, m_DeltaDistance);
+    int numPoints = PointsFitIn(m_Path->GetLength(), m_DeltaDistance);
 
     std::vector<IntermediateProfilePoint> forwardPass;
     forwardPass.reserve(numPoints);
@@ -39,7 +38,7 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
     double vel = 0;
     double lastAngularVel = 0;
 
-    forwardPass.push_back({0, 0, 0, 0});
+    forwardPass.push_back({0, 0, 0, m_Path->GetCurvature(0)});
 
     for (int i = 1; numPoints > 2 && i < numPoints; i++) {
         double d = m_DeltaDistance * i;
@@ -56,13 +55,14 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
         forwardPass.push_back(IntermediateProfilePoint {vel, d, t, curvature});
     }
 
-    forwardPass.push_back({0, m_Path->GetLength(), m_Path->GetMaxT(), 0});
+    forwardPass.push_back({0, m_Path->GetLength(), m_Path->GetMaxT(), m_Path->GetCurvature(m_Path->GetMaxT())});
 
-    std::vector<ProfilePoint> backwardPass;
-    backwardPass.reserve(numPoints);
+    m_ProfilePoints.clear();
+    m_ProfilePoints.reserve(numPoints);
 
     vel = 0;
     lastAngularVel = 0;
+    double time = 0;
 
     for (int i = forwardPass.size() - 1; i >= 0; i--) {
         IntermediateProfilePoint correspondingProfilePoint = forwardPass[i];
@@ -76,16 +76,21 @@ std::vector<Generator::ProfilePoint> Generator::Calculate() {
 
         double minVel = std::min(vel, correspondingProfilePoint.vel);
 
-        backwardPass.push_back({
+        time += (minVel == 0) ? 0 : m_DeltaDistance / minVel;
+
+        m_ProfilePoints.push_back({
             m_Path->GetPoint(correspondingProfilePoint.t),
             minVel,
             minVel * correspondingProfilePoint.curvature,
-            correspondingProfilePoint.distance
+            correspondingProfilePoint.distance,
+            time
         });
     }
 
-    std::reverse(backwardPass.begin(), backwardPass.end());
+    std::reverse(m_ProfilePoints.begin(), m_ProfilePoints.end());
+}
 
-    return backwardPass;
+std::vector<Generator::ProfilePoint> Generator::Access() {
+    return m_ProfilePoints;
 }
 }

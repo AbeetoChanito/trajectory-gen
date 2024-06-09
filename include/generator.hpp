@@ -14,11 +14,14 @@ class Generator {
             double vel;
             double angularVel;
             double dist;
+            double time;
         };
 
         Generator(std::unique_ptr<Path> path, const Constraints& constraints, double deltaDistance = 0.01);
 
-        std::vector<ProfilePoint> Calculate();
+        void Calculate();
+
+        std::vector<ProfilePoint> Access();
     private:
         std::unique_ptr<Path> m_Path;
 
@@ -27,5 +30,7 @@ class Generator {
         DifferentialKinematics m_DifferentialKinematics;
 
         double m_DeltaDistance;
+
+        std::vector<ProfilePoint> m_ProfilePoints;
 };
 }
