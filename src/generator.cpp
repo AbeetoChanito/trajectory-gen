@@ -7,13 +7,13 @@
 #include <iostream>
 
 namespace beegen {
-Generator::Generator(std::unique_ptr<Path> path, const Constraints& constraints, double deltaDistance)
-    : m_Path(std::move(path)), m_Constraints(constraints), m_DifferentialKinematics(constraints), m_DeltaDistance(deltaDistance) {
+Generator::Generator(std::shared_ptr<Path> path, const Constraints& constraints, double deltaDistance)
+    : m_Path(path), m_Constraints(constraints), m_DifferentialKinematics(constraints), m_DeltaDistance(deltaDistance) {
 
 }
 
-static int PointsFitIn(float d, float deltaD) {
-    float unrounded = d / deltaD;
+static int PointsFitIn(double d, double deltaD) {
+    double unrounded = d / deltaD;
     int rounded = static_cast<int>(unrounded);
 
     if (unrounded < 2)
@@ -62,9 +62,8 @@ void Generator::Calculate() {
 
     vel = 0;
     lastAngularVel = 0;
-    double time = 0;
 
-    for (int i = forwardPass.size() - 1; i >= 0; i--) {
+    for (int i = numPoints - 1; i >= 0; i--) {
         IntermediateProfilePoint correspondingProfilePoint = forwardPass[i];
 
         double angularVel = vel * correspondingProfilePoint.curvature;
@@ -76,21 +75,71 @@ void Generator::Calculate() {
 
         double minVel = std::min(vel, correspondingProfilePoint.vel);
 
-        time += (minVel == 0) ? 0 : m_DeltaDistance / minVel;
-
         m_ProfilePoints.push_back({
             m_Path->GetPoint(correspondingProfilePoint.t),
             minVel,
             minVel * correspondingProfilePoint.curvature,
             correspondingProfilePoint.distance,
-            time
+            NAN
         });
     }
 
     std::reverse(m_ProfilePoints.begin(), m_ProfilePoints.end());
+
+    double time = 0;
+
+    for (ProfilePoint& point : m_ProfilePoints) {
+        time += (point.vel == 0) ? 0 : m_DeltaDistance / point.vel;
+        point.time = time;
+    }
 }
 
-std::vector<Generator::ProfilePoint> Generator::Access() {
+std::vector<Generator::ProfilePoint> Generator::GetProfile() {
     return m_ProfilePoints;
+}
+
+Generator::ProfilePoint Generator::GetAtDistance(double distance) {
+    return m_ProfilePoints[static_cast<int>(distance / m_DeltaDistance)];
+}
+
+Generator::ProfilePoint Generator::GetAtTime(double time) {
+    if (time == 0) {
+        return m_ProfilePoints[0];
+    }
+
+    if (time == GetMaxTime()) {
+        return m_ProfilePoints[m_ProfilePoints.size() - 1];
+    }
+
+    int low = 0;
+    int high = m_ProfilePoints.size() - 1;
+    int mid = 0;
+
+    while (low < high) {
+        mid = static_cast<int>((low + high) / 2.0);
+        double timeAtMid = m_ProfilePoints[mid].time;
+        
+        if (timeAtMid < time) {
+            low = mid + 1;
+        } else if (timeAtMid > time) {
+            high = mid;
+        } else {
+            return m_ProfilePoints[mid + 1];
+        }
+    }
+
+    if (m_ProfilePoints[mid].time > time) {
+        mid--;
+    }
+
+    return m_ProfilePoints[mid + 1];
+}
+
+double Generator::GetMaxLength() {
+    return m_Path->GetLength();
+}
+
+double Generator::GetMaxTime() {
+    return m_ProfilePoints[m_ProfilePoints.size() - 1].time;
 }
 }

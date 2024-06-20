@@ -63,13 +63,11 @@ double CubicBezier::GetTFromArcLength(double arcLength) const {
     if (arcLength <= 0) return 0;
 
     int low = 0;
-    int high = GetLength();
+    int high = m_LengthsAtT.size() - 1;
     int mid = 0;
 
-    int targetIndex = 0;
-
     while (low < high) {
-        mid = static_cast<int>((low + high) / 2);
+        mid = static_cast<int>((low + high) / 2.0);
         double lengthAtMid = m_LengthsAtT[mid];
         
         if (lengthAtMid < arcLength) {
@@ -77,7 +75,7 @@ double CubicBezier::GetTFromArcLength(double arcLength) const {
         } else if (lengthAtMid > arcLength) {
             high = mid;
         } else {
-            return targetIndex * m_TIncrement;
+            return mid * m_TIncrement;
         }
     }
 

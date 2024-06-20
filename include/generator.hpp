@@ -17,13 +17,21 @@ class Generator {
             double time;
         };
 
-        Generator(std::unique_ptr<Path> path, const Constraints& constraints, double deltaDistance = 0.01);
+        Generator(std::shared_ptr<Path> path, const Constraints& constraints, double deltaDistance = 0.01);
 
         void Calculate();
 
-        std::vector<ProfilePoint> Access();
+        std::vector<ProfilePoint> GetProfile();
+
+        ProfilePoint GetAtDistance(double distance);
+
+        ProfilePoint GetAtTime(double time);
+
+        double GetMaxLength();
+
+        double GetMaxTime();
     private:
-        std::unique_ptr<Path> m_Path;
+        std::shared_ptr<Path> m_Path;
 
         Constraints m_Constraints;
 
