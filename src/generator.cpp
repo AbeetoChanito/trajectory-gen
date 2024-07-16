@@ -103,11 +103,11 @@ Generator::ProfilePoint Generator::GetAtDistance(double distance) {
 }
 
 Generator::ProfilePoint Generator::GetAtTime(double time) {
-    if (time == 0) {
+    if (time <= 0) {
         return m_ProfilePoints[0];
     }
 
-    if (time == GetMaxTime()) {
+    if (time >= GetMaxTime()) {
         return m_ProfilePoints[m_ProfilePoints.size() - 1];
     }
 
