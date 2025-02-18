@@ -8,7 +8,7 @@ DifferentialKinematics::DifferentialKinematics(const Constraints& constraints)
     : m_Constraints(constraints) {}
 
 double DifferentialKinematics::GetMaxSpeed(double curvature) {
-    double maxTurnSpeed = ((2 * m_Constraints.MaxVel / m_Constraints.TrackWidth) * m_Constraints.MaxVel) / (std::abs(curvature) * m_Constraints.MaxVel + (2 * m_Constraints.MaxVel / m_Constraints.TrackWidth));
+    double maxTurnSpeed = (2 * m_Constraints.MaxVel) / (2 + std::abs(curvature) * m_Constraints.TrackWidth);
 
     if (curvature == 0) return maxTurnSpeed;
 
