@@ -17,7 +17,7 @@ class Generator {
             double time;
         };
 
-        Generator(std::shared_ptr<Path> path, const Constraints& constraints, double deltaDistance = 0.01);
+        Generator(std::shared_ptr<Path> path, const Constraints& constraints, double deltaDistance = 0.01, bool binarySearch = false);
 
         void Calculate();
 
@@ -40,5 +40,7 @@ class Generator {
         double m_DeltaDistance;
 
         std::vector<ProfilePoint> m_ProfilePoints;
+
+        bool m_BinarySearch;
 };
 }

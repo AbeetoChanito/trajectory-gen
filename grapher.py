@@ -7,8 +7,8 @@ graph_axes_name_y = ["Y Position (Inches)", "Velocity (Inches/Second)", "Velocit
 
 graph_names_amnt = len(graph_names)
 
-xs = [[] for _ in range(graph_names_amnt)]
-ys = [[] for _ in range(graph_names_amnt)]
+xs: list[list[float]] = [[] for _ in range(graph_names_amnt)]
+ys: list[list[float]] = [[] for _ in range(graph_names_amnt)]
 
 counter = 0
 

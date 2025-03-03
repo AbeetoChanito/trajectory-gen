@@ -7,8 +7,8 @@
 #include <iostream>
 
 namespace beegen {
-Generator::Generator(std::shared_ptr<Path> path, const Constraints& constraints, double deltaDistance)
-    : m_Path(path), m_Constraints(constraints), m_DifferentialKinematics(constraints), m_DeltaDistance(deltaDistance) {
+Generator::Generator(std::shared_ptr<Path> path, const Constraints& constraints, double deltaDistance, bool binarySearch)
+    : m_Path(path), m_Constraints(constraints), m_DifferentialKinematics(constraints), m_DeltaDistance(deltaDistance), m_BinarySearch(binarySearch) {
 
 }
 
@@ -40,9 +40,18 @@ void Generator::Calculate() {
 
     forwardPass.push_back({0, 0, 0, m_Path->GetCurvature(0)});
 
+    double t = 0;
+
     for (int i = 1; numPoints > 2 && i < numPoints; i++) {
         double d = m_DeltaDistance * i;
-        double t = m_Path->GetTFromArcLength(d);
+        t = [&](){
+            if (m_BinarySearch) {
+                return m_Path->GetTFromArcLength(d);
+            } else {
+                Point currentDeriv = m_Path->GetDerivative(t);
+                return t + m_DeltaDistance / std::hypot(currentDeriv.x, currentDeriv.y);
+            }
+        }();
 
         double curvature = m_Path->GetCurvature(t);
         double angularVel = vel * curvature;
